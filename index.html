@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>littleMUCHO · Proposal Generator</title>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<style>
+:root {
+  --brand: #0D0D0B;
+  --accent: #DD680C;
+  --bg: #F1F2F2;
+  --card: #FFFFFF;
+  --border: #E0DCDA;
+  --text: #0D0D0B;
+  --muted: #6E6A62;
+  --green: #2D7A4F;
+  --red: #C0392B;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* App Header */
+.app-header {
+  background: var(--brand); color: white;
+  padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+.header-brand { display: flex; align-items: center; gap: 14px; }
+.header-logo {
+  height: 36px; display: flex; align-items: center;
+}
+.header-logo img { height: 36px; width: auto; display: block; }
+.header-title { font-size: 16px; font-weight: 700; letter-spacing: 0.04em; }
+.header-sub { font-size: 11px; opacity: 0.5; margin-top: 1px; letter-spacing: 0.06em; text-transform: uppercase; }
+.header-actions { display: flex; gap: 10px; }
+.btn-ghost {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  color: white; padding: 7px 14px; border-radius: 6px; font-size: 12px;
+  cursor: pointer; transition: background 0.15s; font-weight: 500;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.2); }
+
+/* Layout */
+.container {
+  max-width: 1180px; margin: 0 auto; padding: 28px 24px;
+  display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start;
+}
+.form-area { display: flex; flex-direction: column; gap: 18px; }
+.sidebar { position: sticky; top: 76px; display: flex; flex-direction: column; gap: 14px; }
+
+/* Cards */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 22px;
+}
+.card-title {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+}
+
+/* Form Fields */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.span-2 { grid-column: span 2; }
+label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+input[type="text"], input[type="email"], input[type="tel"], input[type="date"],
+input[type="url"], input[type="number"], textarea, select {
+  border: 1px solid var(--border); border-radius: 7px; padding: 9px 12px;
+  font-size: 14px; color: var(--text); background: #FAFAF8;
+  transition: border 0.15s, box-shadow 0.15s; width: 100%; font-family: inherit;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none; border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(28,28,28,0.07); background: white;
+}
+input[type="file"] { padding: 7px 10px; font-size: 13px; background: #F8F7F5; }
+textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+.field-note { font-size: 11px; color: var(--muted); margin-top: 4px; font-style: italic; }
+.logo-preview { max-width: 180px; max-height: 70px; margin-top: 10px; border-radius: 6px; border: 1px solid var(--border); display: none; }
+
+/* Markup Global Bar */
+.markup-bar {
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+  background: #F0EDE5; border-radius: 8px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.markup-bar label { text-transform: none; font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 0; }
+.markup-bar input[type="number"] { width: 76px; padding: 6px 10px; }
+.apply-btn {
+  padding: 6px 14px; font-size: 12px; font-weight: 700;
+  background: var(--brand); color: white; border: none; border-radius: 6px;
+  cursor: pointer; transition: background 0.15s; letter-spacing: 0.04em;
+}
+.apply-btn:hover { background: #333; }
+.markup-hint { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+/* Category Filters */
+.filter-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
+.filter-btn {
+  padding: 5px 13px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  border: 1.5px solid var(--border); background: white; border-radius: 20px;
+  cursor: pointer; color: var(--muted); transition: all 0.15s; text-transform: uppercase;
+}
+.filter-btn.active { background: var(--brand); color: white; border-color: var(--brand); }
+
+/* Services Table */
+.services-table { width: 100%; border-collapse: collapse; }
+.services-table th {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); text-align: left; padding: 8px 10px;
+  border-bottom: 2px solid var(--border); background: #FAFAF8;
+}
+.services-table td { padding: 9px 10px; border-bottom: 1px solid #F0EDE8; vertical-align: middle; font-size: 13px; }
+.services-table tr:last-child td { border-bottom: none; }
+.services-table tr.checked-row { background: #F2FAF6; }
+.services-table tr.custom-row td { background: #FAFAF8; }
+.services-table input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--brand); }
+.svc-name-input {
+  width: 100%; font-weight: 600; font-size: 13px; border: none; background: transparent;
+  padding: 0; color: var(--text); cursor: text;
+}
+.svc-name-input:focus { outline: none; border-bottom: 1px dashed var(--border); }
+.svc-desc { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.4; max-width: 380px; }
+.svc-desc-input {
+  width: 100%; font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.4;
+  border: 1px solid transparent; background: transparent; resize: vertical; min-height: 34px;
+  padding: 2px 4px; border-radius: 4px; font-family: inherit; display: block;
+}
+.svc-desc-input:hover { border-color: var(--border); }
+.svc-desc-input:focus { outline: none; border-color: var(--brand); background: white; box-shadow: 0 0 0 2px rgba(13,13,11,0.06); }
+.hours-rate-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; display: block; margin-bottom: 2px; }
+
+/* Client Type Toggle */
+.client-toggle { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+.toggle-opt {
+  display: flex; align-items: center; gap: 7px; padding: 8px 16px;
+  border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: var(--muted); transition: all 0.15s;
+  background: #FAFAF8; user-select: none;
+}
+.toggle-opt input[type="radio"] { display: none; }
+.toggle-opt.selected { border-color: var(--brand); background: var(--brand); color: white; }
+.payment-suggest { font-size: 11px; color: var(--accent); margin-top: 5px; font-style: italic; display: none; font-weight: 600; }
+.markup-input { width: 70px !important; padding: 5px 8px !important; font-size: 13px !important; }
+.price-display { font-weight: 700; color: var(--text); font-size: 13px; min-width: 80px; }
+.price-input { width: 100px !important; padding: 5px 8px !important; font-size: 13px !important; }
+.del-btn {
+  background: none; border: none; color: #CCC; cursor: pointer;
+  font-size: 18px; padding: 2px 5px; border-radius: 4px; line-height: 1;
+}
+.del-btn:hover { color: var(--red); background: #FDEAEA; }
+.cat-separator td {
+  background: #F0EDE8; font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted); padding: 5px 10px;
+}
+.add-svc-btn {
+  margin-top: 12px; padding: 8px 16px; font-size: 12px; font-weight: 600;
+  background: transparent; border: 1.5px dashed var(--border); border-radius: 7px;
+  color: var(--muted); cursor: pointer; transition: all 0.15s; display: inline-block;
+}
+.add-svc-btn:hover { border-color: var(--brand); color: var(--brand); background: #F5F4F0; }
+
+/* Sidebar Summary */
+.summary-item {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 7px 0; border-bottom: 1px solid var(--border); gap: 8px;
+}
+.summary-item:last-child { border: none; }
+.summary-name { font-size: 12px; color: var(--text); line-height: 1.3; flex: 1; }
+.summary-price { font-size: 12px; font-weight: 700; white-space: nowrap; }
+.summary-total {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0 0; margin-top: 4px; border-top: 2px solid var(--brand);
+  font-weight: 800; font-size: 16px;
+}
+.summary-empty { font-size: 12px; color: var(--muted); text-align: center; padding: 16px 0; font-style: italic; }
+
+/* Buttons */
+.btn {
+  display: block; width: 100%; padding: 13px 16px; border: none;
+  border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: all 0.15s; letter-spacing: 0.04em; text-align: center; font-family: inherit;
+}
+.btn-primary { background: var(--brand); color: white; }
+.btn-primary:hover { background: #333; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.18); }
+.btn-primary:active { transform: none; box-shadow: none; }
+.btn-secondary {
+  background: transparent; color: var(--muted); border: 1.5px solid var(--border);
+  font-size: 12px; padding: 9px 16px;
+}
+.btn-secondary:hover { border-color: var(--brand); color: var(--brand); }
+.status-msg {
+  font-size: 12px; padding: 10px 14px; border-radius: 7px;
+  text-align: center; display: none; line-height: 1.4;
+}
+.status-success { background: #E8F5EE; color: var(--green); display: block; }
+.status-error { background: #FDECEC; color: var(--red); display: block; }
+.tips-card p { font-size: 12px; color: var(--muted); line-height: 1.6; margin-top: 6px; }
+.tips-card p:first-child { margin-top: 0; }
+
+/* Loading overlay */
+#loadingOverlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 999; align-items: center; justify-content: center;
+}
+#loadingOverlay.show { display: flex; }
+.loading-box {
+  background: white; border-radius: 12px; padding: 32px 48px;
+  text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.spinner {
+  width: 40px; height: 40px; border: 3px solid var(--border);
+  border-top-color: var(--brand); border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; font-weight: 600; color: var(--text); }
+.loading-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+/* ── Mobile Responsive ── */
+@media (max-width: 860px) {
+  .container {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 16px;
+  }
+  .sidebar {
+    position: static;
+    order: 3;
+  }
+  .form-area { order: 1; }
+  .tips-card { display: none; }
+}
+
+@media (max-width: 640px) {
+  .app-header { padding: 12px 16px; gap: 10px; }
+  .header-title { font-size: 14px; }
+  .header-sub { display: none; }
+  .header-logo img { height: 28px; }
+  .btn-ghost { padding: 6px 10px; font-size: 11px; }
+  .container { padding: 12px; gap: 12px; }
+  .card { padding: 16px; }
+  .card-title { font-size: 9px; margin-bottom: 12px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-group.span-2 { grid-column: span 1; }
+  .markup-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .markup-hint { display: none; }
+  .filter-row { gap: 5px; }
+  .filter-btn { padding: 4px 10px; font-size: 10px; }
+  .services-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 6px; }
+  .services-table { min-width: 560px; }
+  .btn { padding: 14px; font-size: 15px; }
+  .summary-total { font-size: 14px; }
+  .loading-box { padding: 24px 20px; margin: 20px; }
+}
+
+@media (max-width: 400px) {
+  .app-header { padding: 10px 12px; }
+  .header-title { font-size: 13px; }
+  .container { padding: 10px; }
+  .card { padding: 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div id="pwGate" style="
+  display:none; position:fixed; inset:0; z-index:9999;
+  background:#0D0D0B; align-items:center; justify-content:center;
+  flex-direction:column; font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+">
+  <div style="text-align:center; margin-bottom:32px;">
+    <img id="pwLogo" alt="littleMUCHO" style="height:44px; width:auto; margin-bottom:20px; display:block; margin-left:auto; margin-right:auto;">
+    <div style="font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(255,255,255,0.35); font-weight:700;">Proposal Generator</div>
+  </div>
+  <div style="background:#1A1A18; border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:32px 36px; width:320px; max-width:90vw;">
+    <label style="font-size:11px; font-weight:700; color:rgba(255,255,255,0.4); letter-spacing:0.1em; text-transform:uppercase; display:block; margin-bottom:8px;">Password</label>
+    <input id="pwInput" type="password" placeholder="Enter password"
+      style="width:100%; padding:11px 14px; border-radius:8px; border:1.5px solid rgba(255,255,255,0.1);
+             background:rgba(255,255,255,0.06); color:white; font-size:15px;
+             outline:none; font-family:inherit; transition:border 0.15s;"
+      onkeydown="if(event.key==='Enter') checkPW()"
+      onfocus="this.style.borderColor='rgba(221,104,12,0.7)'"
+      onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+    <div id="pwError" style="color:#E05A3A; font-size:12px; margin-top:8px; display:none; font-weight:600;">Incorrect password. Try again.</div>
+    <button onclick="checkPW()" style="
+      margin-top:16px; width:100%; padding:12px; border:none; border-radius:8px;
+      background:#DD680C; color:white; font-size:14px; font-weight:700;
+      cursor:pointer; letter-spacing:0.04em; font-family:inherit;
+      transition:background 0.15s;
+    " onmouseover="this.style.background='#C55A08'" onmouseout="this.style.background='#DD680C'">
+      Enter
+    </button>
+  </div>
+</div>
+
+<script>
+(function() {
+  const PW_KEY = 'lm_auth_v1';
+  const PW_HASH = '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'; // hello7hello
+
+  async function hashStr(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  function showGate() {
+    const gate = document.getElementById('pwGate');
+    gate.style.display = 'flex';
+    // Set logo inline using the same base64 from the app
+    const logoEl = document.getElementById('pwLogo');
+    logoEl.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJMAAACTCAYAAACK5SsVAAADlklEQVR4nO3cz0sUUQDA8ZlUdD14U4j2YCQFehU8SFgdokDRP6/oKBVGhRFFRcdCK8nKq0dFPLogyv5wO0SSv3bW2e+07pvv57TLmxne4cub5zpMvFMqRRLhUrsnoHAYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMAXgHxZ4q2VRpTz9AAAAAElFTkSuQmCC";
+    setTimeout(() => document.getElementById('pwInput').focus(), 100);
+  }
+
+  window.checkPW = async function() {
+    const val = document.getElementById('pwInput').value;
+    const errEl = document.getElementById('pwError');
+    const h = await hashStr(val);
+    if (h === PW_HASH) {
+      localStorage.setItem(PW_KEY, '1');
+      document.getElementById('pwGate').style.display = 'none';
+      errEl.style.display = 'none';
+    } else {
+      errEl.style.display = 'block';
+      document.getElementById('pwInput').value = '';
+      document.getElementById('pwInput').focus();
+    }
+  };
+
+  if (localStorage.getItem(PW_KEY) !== '1') {
+    showGate();
+  }
+})();
+</script>
+
+<div id="loadingOverlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div class="loading-text">Generating your document...</div>
+    <div class="loading-sub">This will just take a moment</div>
+  </div>
+</div>
+
+<header class="app-header">
+  <div class="header-brand">
+    <div class="header-logo"><img id="appHeaderLogo" alt="littleMUCHO"></div>
+    <div>
+      <div class="header-title">Proposal Generator</div>
+      <div class="header-sub">Scope of Work Creator</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-ghost" onclick="clearForm()">↺ New Proposal</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="form-area">
+
+    <!-- Provider -->
+    <div class="card">
+      <div class="card-title">Your Information</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Company Name</label>
+          <input type="text" id="providerName" value="littleMUCHO">
+        </div>
+        <div class="form-group">
+          <label>Website</label>
+          <input type="text" id="providerWebsite" value="www.littlemucho.com">
+        </div>
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" id="providerContact" placeholder="Your full name">
+        </div>
+        <div class="form-group">
+          <label>Your Email</label>
+          <input type="email" id="providerEmail" placeholder="you@littlemucho.com">
+        </div>
+        <div class="form-group span-2">
+          <label>Company Logo</label>
+          <img id="logoPreview" class="logo-preview" style="display:block; background:#f5f4f1; padding:8px; border-radius:6px;">
+          <div class="field-note" style="margin-top:6px">Your logo is pre-loaded from Canva — upload a different file below to replace it</div>
+          <input type="file" id="logoFile" accept="image/png,image/jpeg,image/jpg" onchange="previewLogo(this)" style="margin-top:8px">
+        </div>
+      </div>
+    </div>
+
+    <!-- Client -->
+    <div class="card">
+      <div class="card-title">Client Information</div>
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label>Client Type</label>
+          <div class="client-toggle">
+            <label class="toggle-opt selected" id="toggleNew">
+              <input type="radio" name="clientType" value="new" checked onchange="setClientType('new')">
+              New Client
+            </label>
+            <label class="toggle-opt" id="toggleExisting">
+              <input type="radio" name="clientType" value="existing" onchange="setClientType('existing')">
+              Existing Client
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Client / Company Name *</label>
+          <input type="text" id="clientName" placeholder="e.g. ACME Brand Co.">
+        </div>
+        <div class="form-group">
+          <label>Contact Person</label>
+          <input type="text" id="clientContact" placeholder="e.g. Jane Smith">
+        </div>
+        <div class="form-group">
+          <label>Client Email</label>
+          <input type="email" id="clientEmail" placeholder="jane@client.com">
+        </div>
+        <div class="form-group">
+          <label>Client Phone</label>
+          <input type="tel" id="clientPhone" placeholder="+1 (555) 000-0000">
+        </div>
+        <div class="form-group span-2">
+          <label>Client Address</label>
+          <input type="text" id="clientAddress" placeholder="123 Main St, Miami, FL 33101">
+        </div>
+      </div>
+    </div>
+
+    <!-- Project -->
+    <div class="card">
+      <div class="card-title">Project Details</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Project / Engagement Name *</label>
+          <input type="text" id="projectName" placeholder="e.g. Brand + Digital Launch">
+        </div>
+        <div class="form-group">
+          <label>Agreement Date *</label>
+          <input type="date" id="agreementDate">
+        </div>
+        <div class="form-group">
+          <label>Project Start Date</label>
+          <input type="date" id="startDate">
+        </div>
+        <div class="form-group">
+          <label>Governing State</label>
+          <input type="text" id="governingState" placeholder="e.g. Florida">
+        </div>
+        <div class="form-group span-2">
+          <label>Payment Schedule</label>
+          <input type="text" id="paymentSchedule" value="50% due upon signing, 50% due upon delivery of final deliverables" oninput="this.dataset.manual='1'">
+          <div class="payment-suggest" id="paymentSuggest"></div>
+        </div>
+        <div class="form-group span-2">
+          <label>QuickBooks Online Payment Link</label>
+          <input type="url" id="qbLink" placeholder="https://pay.qbo.intuit.com/...">
+          <div class="field-note">This will appear as a clickable "Pay Now" link in the document</div>
+        </div>
+        <div class="form-group span-2">
+          <label>Additional Notes (optional)</label>
+          <textarea id="projectNotes" placeholder="Any special terms, project context, or notes to include in the document..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scope -->
+    <div class="card">
+      <div class="card-title">Scope of Work — Select Services</div>
+
+      <div class="markup-bar">
+        <label>Global Markup:</label>
+        <input type="number" id="globalMarkup" value="100" min="0" max="2000" class="markup-input" style="width:76px">
+        <span style="font-size:13px; color:var(--muted)">%</span>
+        <button class="apply-btn" onclick="applyGlobalMarkup()">Apply to All</button>
+        <span class="markup-hint">Base cost × (1 + markup%) = client price</span>
+      </div>
+
+      <div class="filter-row" id="filterRow"></div>
+
+      <div class="services-table-wrap">
+      <table class="services-table">
+        <thead>
+          <tr>
+            <th style="width:34px"></th>
+            <th>Service</th>
+            <th style="width:90px">Timing</th>
+            <th style="width:82px">Markup %</th>
+            <th style="width:110px">Client Price</th>
+            <th style="width:30px"></th>
+          </tr>
+        </thead>
+        <tbody id="servicesBody"></tbody>
+      </table>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="add-svc-btn" style="margin-top:0" onclick="addCustomRow()">+ Add Custom Service</button>
+        <button class="add-svc-btn" style="margin-top:0;border-color:var(--accent);color:var(--accent)" onclick="addCustomDesignRow()">+ Add Custom Design (Hourly)</button>
+      </div>
+    </div>
+
+  </div><!-- /form-area -->
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="card">
+      <div class="card-title">Proposal Summary</div>
+      <div id="summaryContent">
+        <div class="summary-empty">Select services to see your summary</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="generateDoc()">↓ Generate Scope of Work</button>
+    <button class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+
+    <div class="status-msg" id="statusMsg"></div>
+
+    <div class="card tips-card">
+      <div class="card-title">Tips</div>
+      <p>Client prices are base cost × (1 + markup%). Default markup is 100%.</p>
+      <p>You can edit any service name or price directly in the table.</p>
+      <p>The document is formatted for LegalZoom e-signature import.</p>
+      <p>Your QuickBooks link will appear as a clickable button in the signed document.</p>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ============================================================
+// BRAND ASSETS (embedded from Canva)
+// ============================================================
+const LM_LOGO_DARK  = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJMAAACTCAYAAACK5SsVAAADlklEQVR4nO3cz0sUUQDA8ZlUdD14U4j2YCQFehU8SFgdokDRP6/oKBVGhRFFRcdCK8nKq0dFPLogyv5wO0SSv3bW2e+07pvv57TLmxne4cub5zpMvFMqRRLhUrsnoHAYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJEx3uyfQquKVy/V/v6/++BUPDg6eeuza2lp0/97dI8c/ePgonp6ePvVaf31f/RkPDQ0xEw5YvFMqtXsOLTkewPKXb3GxWEw87rwWX72Ox8fHW7lE8HJxm2s1pCiKornZmfr6+joxnWAFH9PKygp2rVtTN1uOMmTBxRTH8ZHvc7MzaAAHBwfk5YISXEzN2Njcijc2t+JPn5fiRuPvP3w8MV4ul7OfYIcKLqZ6vfFC9Obtu8NAhoeHT4w/ebpwOD42Nnbu6+dZ7mIqFAotna+zBRfT8T3TcX19fS2dr7MFF1PSytLV1dXS+TpbcDElrSzd3Y1/9HdlSi+4mJJWlkql8p9mkj/BxZSkWq22ewrByl1MtVqt3VMIVu5i8jaXndzF5G0uO8YkTHAxJf1pXzOmzAQXU9JPA2X3TJkJLqYkbsCzk7uYqsaUmdzFVHHPlJncxZT0cJv/6E0vdzH500B2chdT0iMoPjWQXu5i6unpafcUgpW7mPp6e9s9hWDlLqZCf3/DcTfg6QUX097e3uHn/f39E+MDAwMNz3fPlF5wMd25PVXf3d2Ntre3o5FrV08sM6Ojow3PN6b0Ov4tKKe5cX0k9b3K21x6Hb8yLTx73vRS8uLlostOhjo+psnJyaaPnZiYyHAm6viYoujPuwHm5x+fueosLX+NNza3mlqV3DOl1/Ev+9LFEcTKpIvBmIQxJmGMSRhjEsaYhDEmYYxJGGMSxpiEMSZhjEkYYxLGmIQxJmGMSRhjEsaYhDEmYYxJGGMSxpiEMSZhjEkYYxLGmIQxJmGMSRhjEsaYhDEmYYxJGGMSxpiEMSZhjEkYYxLGmIQxJmGMSRhjEsaYhDEmYYxJGGMSxpiEMSZhjEmY39oorjvkocvSAAAAAElFTkSuQmCC";
+const LM_LOGO_WHITE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJMAAACTCAYAAACK5SsVAAADd0lEQVR4nO3cz0vbUADA8WQqtkJ7c2zgwbOenAUPnup/LFQmTOZhwjx4Wple/AfUky2i9IfdYUycpU1NvrHm5fuBguUl4QlfXp41NL7tdCKJ8GHeE1A4jEkYYxLGmIQxJmGMSRhjEsaYhDEmYYxJGGMSxpiEMSZhjEkYYxLGmIQxJmGMSRhjEsaYhDEmYYxJGGMSxpiEMSZhjEkYYxLGmIQxJmGMSRhjEsaYhDEmYYxJGGMSxpiEMSZhjEkYYxLGmIQxJmGMSRhjEsaYhDEmYYxJGGMSxpiEMSZhjEkYYxLGmIQxJmGMSRhjEsaYhDEmYYxJGGMSxpiEMSZhjEkYYxKm8DHVa7XR89fNzc3EY9vt9tjxrVZr4rX+va6vr9/iVym8+LbTmfccMqnXaqPn788vLuK1tbXE417r+/Fx3Gg0slwieIVfmWaRNaQoiqK9ZnN0eXlJTCdYwcd0dnaGXevL1lbmKEMWXExxHP/3fq/ZRAN4fHwkLxeU4GKaRafbjTvdbvyr3Y6njf88PR0b7/V6+U+woIKLaTSavhD9ODl5CmR9fX1svHVw8DS+ubn56uuXWeliqlarmc7XZMHF9HLP9FKlUsl0viYLLqaklWVhYSHT+ZosuJiSVpbFxcVM52uy4GJKWln6/f4bzaR8gospyWAwmPcUglW6mIbD4bynEKzSxeRtLj+li8nbXH6MSZjgYkr6035oTLkJLqakjwZ67plyE1xMSdyA56d0MQ2MKTeli6nvnik3pYsp6eE2/9GbXuli8qOB/JQupqRHUHxqIL3SxbS0tDTvKQSrdDFVlpfnPYVglS6m6srK1HE34OkFF9P9/f3Tzw8PD2Pj9Xp96vnumdILLqbG9vbo7u4uurq6ij6uro4tMxsbG1PPN6b0pj8QXVCfP31Kfa/yNpde4Vemr4eHMy8l346OXHZyVPiYdnd3Zz52Z2cnx5mo8DFF0d/vBtjf35+46vw+P4873e5Mq5J7pvQK/2Vfej+CWJn0PhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCWNMwhiTMMYkjDEJY0zCGJMwxiSMMQljTMIYkzDGJIwxCfMHMqi6h9M4+woAAAAASUVORK5CYII=";
+
+// ============================================================
+// SERVICE DATA (from littleMUCHO pricing sheet)
+// ============================================================
+const SERVICES = [
+  // Strategy
+  { id:"strat-1", cat:"Strategy", name:"Strategic Alignment",
+    desc:"Strategic briefing document, art direction and brand tone alignment, communication and strategy brief",
+    timing:"1–2 weeks", baseCost:150 },
+
+  // Digital Marketing
+  { id:"mkt-1", cat:"Digital Marketing", name:"Email Marketing",
+    desc:"Writing copy, design layouts, list and segment setup, send management (4 emails/month)",
+    timing:"Monthly", baseCost:533 },
+  { id:"mkt-2", cat:"Digital Marketing", name:"Paid Ads (META + Google)",
+    desc:"Campaign strategy, ad setup and launch, 2 monthly campaigns with reporting, 3 responsive designs per channel, ongoing optimization, A/B testing, advanced targeting",
+    timing:"Monthly", baseCost:443 },
+  { id:"mkt-3", cat:"Digital Marketing", name:"Social Strategy Planning",
+    desc:"Social strategy, competitive review, content calendar creation, reporting SOPs and production process",
+    timing:"Weeks 1–2", baseCost:1034 },
+  { id:"mkt-4", cat:"Digital Marketing", name:"Social Media Management (Ongoing)",
+    desc:"3 posts, 4 short-form videos (15 sec), 8 stories, 1 round of changes per month. Includes content creation from assets and content calendar management",
+    timing:"Monthly", baseCost:767 },
+
+  // Influencer
+  { id:"inf-1", cat:"Influencer & PR", name:"Influencer Management / UGC Sourcing",
+    desc:"Influencer strategy and activation plan, outreach and negotiation, contract and payout management, project management for 2–5 influencers",
+    timing:"Ongoing", baseCost:0 },
+
+  // SEO
+  { id:"seo-1", cat:"SEO", name:"SEO Full Audit + Strategy (Phases 1–5)",
+    desc:"SEO audit, competitor analysis, keyword benchmark, keyword mapping, content gap analysis, content optimization blueprint, technical SEO plan, page-level optimization report, metadata sheet, backlink strategy, local SEO setup",
+    timing:"Weeks 1–6", baseCost:3500 },
+  { id:"seo-2", cat:"SEO", name:"SEO Management (Ongoing)",
+    desc:"Page-level optimization report + metadata sheet, content optimization reporting",
+    timing:"Monthly", baseCost:400 },
+
+  // Design
+  { id:"des-1", cat:"Design & Print", name:"Sales Deck Redesign",
+    desc:"45 redesigned slides based on current branding, design of graphics and iconography, 2 rounds of revisions (PPTX, Google Slides, Canva templates)",
+    timing:"2–3 weeks", baseCost:900 },
+  { id:"des-2", cat:"Design & Print", name:"Brochures (4)",
+    desc:"4 redesigned brochures based on current branding, 2 rounds of revisions per brochure — delivered as PDF + editable file (print-ready and digital)",
+    timing:"2–3 weeks", baseCost:1000 },
+  { id:"des-3", cat:"Design & Print", name:"Simple Brochure",
+    desc:"1 brochure (4–8 pages), written content structure + copy polishing, product specs and technical info layout, print-ready + digital version, 2 rounds of revisions",
+    timing:"1 week", baseCost:350 },
+  { id:"des-4", cat:"Design & Print", name:"Sampling Book",
+    desc:"Concept development and full visual design for a premium sampling box. Includes 2 creative concepts, box design with interior layout, prototyping, materials recommendations, production-ready files (PDF + dielines), 2 rounds of revisions",
+    timing:"2–4 weeks", baseCost:950 },
+  { id:"des-5", cat:"Design & Print", name:"Sample Book — Chassis",
+    desc:"Concept development and visual design of a premium sampling carousel/chassis. Includes 2 creative concepts, chassis design from provided specs, production-ready files (PDF + dielines), 2 rounds of revisions",
+    timing:"2–3 weeks", baseCost:350 },
+  { id:"des-6", cat:"Design & Print", name:"Mini Book / Magazine",
+    desc:"Consolidated product sales magazine (~24 pages). Includes written structure, copywriting, product specs and technical info layout, install shots, print-ready and digital version, 2 rounds of revisions",
+    timing:"2–4 weeks", baseCost:720 },
+  { id:"des-7", cat:"Design & Print", name:"Sample Bag w/ Design",
+    desc:"Screen-printed muslin bag with branding for sample delivery. Includes double-sided brand card, 2 design alternatives, print-ready files, vendor specs, 2 rounds of revisions",
+    timing:"1 week", baseCost:300 },
+  { id:"des-8", cat:"Design & Print", name:"PR Package Design",
+    desc:"Concept development and visual design of a premium brand PR package. Includes 2 creative concepts (moodboard), materials and finish recommendations, 2 rounds of revisions",
+    timing:"2–4 weeks", baseCost:400 },
+  { id:"des-9", cat:"Design & Print", name:"Sticker Design",
+    desc:"2 design alternatives, final sticker design (print-ready), vendor specs (size, material, adhesive), 2 rounds of revisions",
+    timing:"1 week", baseCost:100 },
+
+  // Web
+  { id:"web-1", cat:"Web", name:"Full Website Build (Shopify)",
+    desc:"Product hub, category page, product detail page, quote request pop-up, product uploads, trade hub, philosophy page, blog, home page, footer (contact, terms, privacy, FAQs)",
+    timing:"TBD", baseCost:5415,
+    paymentNote:"50% due upon signing, 25% due upon delivery of final design, 25% due upon delivery of final development" },
+  { id:"web-2", cat:"Web", name:"Website Design (Shopify)",
+    desc:"Full website design on Shopify platform",
+    timing:"TBD", baseCost:3250 },
+  { id:"web-3", cat:"Web", name:"Website Programming from Figma",
+    desc:"Development and programming from provided Figma design files",
+    timing:"TBD", baseCost:1425 },
+
+  // General Web Build
+  { id:"web-gen-1", cat:"Web", name:"Full Website Build",
+    desc:"Complete website design and development. Includes Home Page, Projects Page, Project Detail Page, Contact Us Page, About Us Page, and Policies Page. Fully responsive, SEO-optimized, and built to convert.",
+    timing:"8–12 weeks", baseCost:3250,
+    paymentNote:"50% due upon signing, 25% due upon delivery of final design, 25% due upon delivery of final development" },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let rows = []; // { id, cat, name, desc, timing, baseCost, markup, clientPrice, checked, custom }
+let activeFilter = "All";
+let customCounter = 0;
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener("DOMContentLoaded", () => {
+  // Pre-load brand logo
+  document.getElementById("appHeaderLogo").src = LM_LOGO_WHITE;
+  const prev = document.getElementById("logoPreview");
+  prev.src = LM_LOGO_DARK;
+  prev.style.display = "block";
+
+  // Set today's date
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("agreementDate").value = today;
+
+  // Build rows from services
+  rows = SERVICES.map(s => ({
+    ...s,
+    markup: 100,
+    clientPrice: Math.round(s.baseCost * 2),
+    checked: false,
+    custom: false
+  }));
+
+  renderFilters();
+  renderTable();
+  updateSummary();
+});
+
+// ============================================================
+// FILTERS
+// ============================================================
+function getCategories() {
+  const cats = ["All", ...new Set(rows.map(r => r.cat))];
+  return cats;
+}
+
+function renderFilters() {
+  const row = document.getElementById("filterRow");
+  row.innerHTML = "";
+  getCategories().forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "filter-btn" + (cat === activeFilter ? " active" : "");
+    btn.textContent = cat;
+    btn.onclick = () => { activeFilter = cat; renderFilters(); renderTable(); };
+    row.appendChild(btn);
+  });
+}
+
+// ============================================================
+// TABLE RENDERING
+// ============================================================
+function renderTable() {
+  const tbody = document.getElementById("servicesBody");
+  tbody.innerHTML = "";
+
+  const filtered = activeFilter === "All" ? rows : rows.filter(r => r.cat === activeFilter);
+
+  // Group by category
+  const grouped = {};
+  filtered.forEach(r => {
+    if (!grouped[r.cat]) grouped[r.cat] = [];
+    grouped[r.cat].push(r);
+  });
+
+  Object.entries(grouped).forEach(([cat, catRows]) => {
+    // Category header
+    const catTr = document.createElement("tr");
+    catTr.className = "cat-separator";
+    catTr.innerHTML = `<td colspan="6">${cat}</td>`;
+    tbody.appendChild(catTr);
+
+    catRows.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.id = "row-" + row.id;
+      tr.className = row.checked ? "checked-row" : "";
+      if (row.custom) tr.classList.add("custom-row");
+
+      if (row.isCustomDesign) {
+        // Custom Design (hourly) row — hours + rate instead of markup
+        tr.innerHTML = `
+          <td><input type="checkbox" ${row.checked ? "checked" : ""} onchange="toggleRow('${row.id}', this.checked)"></td>
+          <td>
+            <input class="svc-name-input" type="text" value="${escHtml(row.name)}" onchange="updateRowName('${row.id}', this.value)">
+            <textarea class="svc-desc-input" onchange="updateRowDesc('${row.id}', this.value)">${escHtml(row.desc)}</textarea>
+          </td>
+          <td>
+            <span class="hours-rate-label">Hours</span>
+            <input type="number" class="markup-input" value="${row.hours || 0}" min="0" step="0.5"
+                 oninput="updateRowHours('${row.id}', this.value)" style="width:70px" placeholder="0">
+          </td>
+          <td>
+            <span class="hours-rate-label">$/hr</span>
+            <input type="number" class="markup-input" value="${row.rate !== undefined ? row.rate : 150}" min="0"
+                 oninput="updateRowRate('${row.id}', this.value)" style="width:70px">
+          </td>
+          <td><span class="price-display" id="price-${row.id}">${row.clientPrice > 0 ? "$" + row.clientPrice.toLocaleString() : "—"}</span></td>
+          <td><button class="del-btn" onclick="deleteRow('${row.id}')" title="Remove">×</button></td>
+        `;
+      } else {
+        // Standard service row
+        const priceDisplay = `<input type="number" class="price-input" value="${row.clientPrice}" min="0"
+               onchange="setCustomPrice('${row.id}', this.value)" style="width:100px">`;
+
+        tr.innerHTML = `
+          <td><input type="checkbox" ${row.checked ? "checked" : ""} onchange="toggleRow('${row.id}', this.checked)"></td>
+          <td>
+            <input class="svc-name-input" type="text" value="${escHtml(row.name)}" onchange="updateRowName('${row.id}', this.value)">
+            <textarea class="svc-desc-input" onchange="updateRowDesc('${row.id}', this.value)">${escHtml(row.desc)}</textarea>
+          </td>
+          <td style="font-size:12px; color:var(--muted)">${escHtml(row.timing)}</td>
+          <td>
+            ${row.baseCost > 0
+              ? `<input type="number" class="markup-input" value="${row.markup}" min="0" max="2000"
+                   onchange="updateMarkup('${row.id}', this.value)" style="width:70px">`
+              : `<span style="font-size:11px;color:var(--muted)">custom</span>`
+            }
+          </td>
+          <td>${priceDisplay}</td>
+          <td>${row.custom ? `<button class="del-btn" onclick="deleteRow('${row.id}')" title="Remove">×</button>` : ""}</td>
+        `;
+      }
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function escHtml(str) {
+  return String(str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ============================================================
+// ROW ACTIONS
+// ============================================================
+function toggleRow(id, checked) {
+  const row = rows.find(r => r.id === id);
+  if (row) { row.checked = checked; renderTable(); updateSummary(); updatePaymentSuggestion(); }
+}
+
+function setClientType(type) {
+  document.getElementById("toggleNew").classList.toggle("selected", type === "new");
+  document.getElementById("toggleExisting").classList.toggle("selected", type === "existing");
+}
+
+function updatePaymentSuggestion() {
+  const noted = rows.filter(r => r.checked && r.paymentNote);
+  const el = document.getElementById("paymentSuggest");
+  const field = document.getElementById("paymentSchedule");
+  if (!el || !field) return;
+  if (noted.length > 0) {
+    const note = noted[noted.length - 1].paymentNote;
+    el.textContent = "Suggested: " + note;
+    el.style.display = "block";
+    if (!field.dataset.manual) field.value = note;
+  } else {
+    el.style.display = "none";
+    if (!field.dataset.manual) field.value = "50% due upon signing, 50% due upon delivery of final deliverables";
+  }
+}
+
+function updateMarkup(id, val) {
+  const row = rows.find(r => r.id === id);
+  if (row) {
+    row.markup = parseFloat(val) || 0;
+    row.clientPrice = Math.round(row.baseCost * (1 + row.markup / 100));
+    // Re-render just the price field
+    const tr = document.getElementById("row-" + id);
+    if (tr) {
+      const priceInput = tr.querySelectorAll("input[type='number']")[1];
+      if (priceInput) priceInput.value = row.clientPrice;
+    }
+    updateSummary();
+  }
+}
+
+function setCustomPrice(id, val) {
+  const row = rows.find(r => r.id === id);
+  if (row) {
+    row.clientPrice = parseInt(val) || 0;
+    updateSummary();
+  }
+}
+
+function updateRowName(id, val) {
+  const row = rows.find(r => r.id === id);
+  if (row) row.name = val;
+}
+
+function updateRowDesc(id, val) {
+  const row = rows.find(r => r.id === id);
+  if (row) row.desc = val;
+}
+
+function updateRowHours(id, val) {
+  const row = rows.find(r => r.id === id);
+  if (row) {
+    row.hours = parseFloat(val) || 0;
+    row.clientPrice = Math.round(row.hours * (row.rate !== undefined ? row.rate : 150));
+    const priceEl = document.getElementById("price-" + id);
+    if (priceEl) priceEl.textContent = row.clientPrice > 0 ? "$" + row.clientPrice.toLocaleString() : "—";
+    updateSummary();
+  }
+}
+
+function updateRowRate(id, val) {
+  const row = rows.find(r => r.id === id);
+  if (row) {
+    row.rate = parseFloat(val) || 0;
+    row.clientPrice = Math.round((row.hours || 0) * row.rate);
+    const priceEl = document.getElementById("price-" + id);
+    if (priceEl) priceEl.textContent = row.clientPrice > 0 ? "$" + row.clientPrice.toLocaleString() : "—";
+    updateSummary();
+  }
+}
+
+function applyGlobalMarkup() {
+  const m = parseFloat(document.getElementById("globalMarkup").value) || 0;
+  rows.forEach(r => {
+    if (r.baseCost > 0) {
+      r.markup = m;
+      r.clientPrice = Math.round(r.baseCost * (1 + m / 100));
+    }
+  });
+  renderTable();
+  updateSummary();
+}
+
+function deleteRow(id) {
+  rows = rows.filter(r => r.id !== id);
+  renderFilters();
+  renderTable();
+  updateSummary();
+}
+
+function addCustomRow() {
+  customCounter++;
+  const newRow = {
+    id: "custom-" + customCounter,
+    cat: "Custom",
+    name: "Custom Service",
+    desc: "Describe the deliverables for this service",
+    timing: "TBD",
+    baseCost: 0,
+    markup: 0,
+    clientPrice: 0,
+    checked: true,
+    custom: true
+  };
+  rows.push(newRow);
+  activeFilter = "All";
+  renderFilters();
+  renderTable();
+  updateSummary();
+  setTimeout(() => {
+    const tr = document.getElementById("row-" + newRow.id);
+    if (tr) tr.querySelector(".svc-name-input").select();
+  }, 50);
+}
+
+function addCustomDesignRow() {
+  customCounter++;
+  const newRow = {
+    id: "custom-d-" + customCounter,
+    cat: "Custom",
+    name: "Custom Design",
+    desc: "Describe the design work, deliverables, and scope for this project",
+    timing: "",
+    baseCost: 0,
+    markup: 0,
+    hours: 0,
+    rate: 150,
+    clientPrice: 0,
+    checked: true,
+    custom: true,
+    isCustomDesign: true
+  };
+  rows.push(newRow);
+  activeFilter = "All";
+  renderFilters();
+  renderTable();
+  updateSummary();
+  setTimeout(() => {
+    const tr = document.getElementById("row-" + newRow.id);
+    if (tr) tr.querySelector(".svc-name-input").select();
+  }, 50);
+}
+
+// ============================================================
+// SUMMARY
+// ============================================================
+function updateSummary() {
+  const selected = rows.filter(r => r.checked);
+  const container = document.getElementById("summaryContent");
+  if (selected.length === 0) {
+    container.innerHTML = '<div class="summary-empty">Select services to see your summary</div>';
+    return;
+  }
+  let html = "";
+  selected.forEach(r => {
+    html += `<div class="summary-item">
+      <span class="summary-name">${escHtml(r.name)}</span>
+      <span class="summary-price">${r.clientPrice > 0 ? "$" + r.clientPrice.toLocaleString() : "TBD"}</span>
+    </div>`;
+  });
+  const total = selected.reduce((s, r) => s + (r.clientPrice || 0), 0);
+  html += `<div class="summary-total"><span>Total</span><span>$${total.toLocaleString()}</span></div>`;
+  container.innerHTML = html;
+}
+
+// ============================================================
+// FORM UTILS
+// ============================================================
+function clearForm() {
+  if (!confirm("Clear all form data and start a new proposal?")) return;
+  document.getElementById("clientName").value = "";
+  document.getElementById("clientContact").value = "";
+  document.getElementById("clientEmail").value = "";
+  document.getElementById("clientPhone").value = "";
+  document.getElementById("clientAddress").value = "";
+  document.getElementById("projectName").value = "";
+  document.getElementById("projectNotes").value = "";
+  document.getElementById("qbLink").value = "";
+  document.getElementById("governingState").value = "";
+  document.getElementById("paymentSchedule").value = "50% due upon signing, 50% due upon delivery of final deliverables";
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("agreementDate").value = today;
+  document.getElementById("startDate").value = "";
+  document.getElementById("logoFile").value = "";
+  const lp = document.getElementById("logoPreview");
+  lp.src = LM_LOGO_DARK;
+  lp.style.display = "block";
+  rows.forEach(r => { r.checked = false; r.markup = 100; r.clientPrice = Math.round(r.baseCost * 2); });
+  rows = rows.filter(r => !r.custom);
+  activeFilter = "All";
+  renderFilters();
+  renderTable();
+  updateSummary();
+  showStatus("", "");
+}
+
+function previewLogo(input) {
+  const file = input.files[0];
+  const preview = document.getElementById("logoPreview");
+  if (file) {
+    const url = URL.createObjectURL(file);
+    preview.src = url;
+    preview.style.display = "block";
+  } else {
+    preview.style.display = "none";
+  }
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById("statusMsg");
+  el.textContent = msg;
+  el.className = "status-msg";
+  if (type) el.classList.add("status-" + type);
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const [y, m, d] = dateStr.split("-");
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  return `${months[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
+}
+
+// ============================================================
+// FILE READING UTILS
+// ============================================================
+function readFileAsArrayBuffer(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = e => res(e.target.result);
+    reader.onerror = rej;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function getImageDimensions(buffer, mimeType) {
+  return new Promise(res => {
+    const blob = new Blob([buffer], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const maxW = 160, maxH = 55;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+      if (h > maxH) { w = Math.round(w * maxH / h); h = maxH; }
+      URL.revokeObjectURL(url);
+      res({ width: w, height: h });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); res({ width: 160, height: 50 }); };
+    img.src = url;
+  });
+}
+
+// ============================================================
+// DOCUMENT GENERATION
+// ============================================================
+async function generateDoc() {
+  const clientName   = document.getElementById("clientName").value.trim();
+  const projectName  = document.getElementById("projectName").value.trim();
+  const agreementDate = document.getElementById("agreementDate").value;
+
+  if (!clientName)   { showStatus("Please enter a Client Name.", "error"); return; }
+  if (!projectName)  { showStatus("Please enter a Project Name.", "error"); return; }
+  if (!agreementDate){ showStatus("Please select an Agreement Date.", "error"); return; }
+
+  const selected = rows.filter(r => r.checked);
+  if (selected.length === 0) { showStatus("Please select at least one service.", "error"); return; }
+
+  showStatus("", "");
+  document.getElementById("loadingOverlay").classList.add("show");
+
+  try {
+    // Collect all form values
+    const d = {
+      providerName:    document.getElementById("providerName").value.trim() || "littleMUCHO",
+      providerWebsite: document.getElementById("providerWebsite").value.trim() || "www.littlemucho.com",
+      providerContact: document.getElementById("providerContact").value.trim(),
+      providerEmail:   document.getElementById("providerEmail").value.trim(),
+      clientName, clientContact: document.getElementById("clientContact").value.trim(),
+      clientEmail: document.getElementById("clientEmail").value.trim(),
+      clientPhone: document.getElementById("clientPhone").value.trim(),
+      clientAddress: document.getElementById("clientAddress").value.trim(),
+      projectName, agreementDate, startDate: document.getElementById("startDate").value,
+      paymentSchedule: document.getElementById("paymentSchedule").value.trim(),
+      qbLink: document.getElementById("qbLink").value.trim(),
+      projectNotes: document.getElementById("projectNotes").value.trim(),
+      governingState: document.getElementById("governingState").value.trim() || "[State]",
+    };
+
+    // Logo — use uploaded file or fall back to embedded brand logo
+    let logoData = null, logoDims = null, logoType = "png";
+    const logoFile = document.getElementById("logoFile").files[0];
+    if (logoFile) {
+      logoData = await readFileAsArrayBuffer(logoFile);
+      logoDims = await getImageDimensions(logoData, logoFile.type);
+      logoType = logoFile.type.includes("png") ? "png" : "jpg";
+    } else {
+      // Use embedded brand logo (dark version for white document background)
+      const resp = await fetch(LM_LOGO_DARK);
+      const buf  = await resp.arrayBuffer();
+      logoData   = buf;
+      logoDims   = { width: 44, height: 44 };
+      logoType   = "png";
+    }
+
+    await buildDocx(d, selected, logoData, logoDims, logoType);
+    showStatus("Document generated and downloaded!", "success");
+  } catch(e) {
+    console.error(e);
+    showStatus("Error generating document: " + e.message, "error");
+  } finally {
+    document.getElementById("loadingOverlay").classList.remove("show");
+  }
+}
+
+async function buildDocx(d, services, logoData, logoDims, logoType) {
+  const {
+    Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, ImageRun,
+    Header, Footer, AlignmentType, BorderStyle, WidthType, ShadingType,
+    PageNumber, PageBreak, ExternalHyperlink, LevelFormat, TabStopType, TabStopPosition
+  } = docx;
+
+  const CW = 9360;  // content width DXA (8.5in - 2*1.0in margins = 6.5in = 9360 DXA)
+  const DARK = "0D0D0B", ORANGE = "DD680C", GRAY = "888888", LGRAY = "F7F6F3", MGRAY = "FAF0EA", BORDER = "D8D4CE";
+  const year = new Date().getFullYear();
+
+  // ---- Border helpers ----
+  const thinBorder = { style: BorderStyle.SINGLE, size: 1, color: BORDER };
+  const allBorders = { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder };
+  const noBorder = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+  const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+
+  // ---- Cell factory ----
+  function hCell(text, w) {
+    return new TableCell({
+      borders: allBorders,
+      width: { size: w, type: WidthType.DXA },
+      shading: { fill: ORANGE, type: ShadingType.CLEAR },
+      margins: { top: 110, bottom: 110, left: 130, right: 130 },
+      children: [new Paragraph({
+        children: [new TextRun({ text, size: 18, bold: true, color: "FFFFFF", font: "Arial" })]
+      })]
+    });
+  }
+
+  function dCell(text, w, fill, opts = {}) {
+    return new TableCell({
+      borders: allBorders,
+      width: { size: w, type: WidthType.DXA },
+      shading: { fill: fill || "FFFFFF", type: ShadingType.CLEAR },
+      margins: { top: 110, bottom: 110, left: 130, right: 130 },
+      children: [new Paragraph({
+        alignment: opts.right ? AlignmentType.RIGHT : AlignmentType.LEFT,
+        children: [new TextRun({ text: String(text || ""), size: 20, bold: !!opts.bold, font: "Arial", color: opts.color || DARK })]
+      })]
+    });
+  }
+
+  // ---- HEADER ----
+  const headerChildren = [];
+  if (logoData && logoDims) {
+    headerChildren.push(new Paragraph({
+      children: [
+        new ImageRun({
+          type: logoType, data: logoData,
+          transformation: { width: logoDims.width, height: logoDims.height },
+          altText: { title: d.providerName + " Logo", description: "Company Logo", name: "Logo" }
+        }),
+        new TextRun({ text: "\t" + d.providerWebsite, size: 17, color: GRAY, font: "Arial" })
+      ],
+      tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+      spacing: { after: 60 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: "D8D4CE", space: 4 } }
+    }));
+  } else {
+    headerChildren.push(new Paragraph({
+      children: [
+        new TextRun({ text: d.providerName, size: 28, bold: true, color: DARK, font: "Arial" }),
+        new TextRun({ text: "\t" + d.providerWebsite, size: 17, color: GRAY, font: "Arial" })
+      ],
+      tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+      spacing: { after: 60 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: "D8D4CE", space: 4 } }
+    }));
+  }
+
+  // ---- FOOTER ----
+  const footerPara = new Paragraph({
+    children: [
+      new TextRun({ text: `© ${year} ${d.providerName}. All rights reserved.   ${d.providerWebsite}`, size: 16, color: GRAY, font: "Arial" }),
+      new TextRun({ text: "\tPage ", size: 16, color: GRAY, font: "Arial" }),
+      new TextRun({ children: [PageNumber.CURRENT], size: 16, color: GRAY, font: "Arial" }),
+      new TextRun({ text: " of ", size: 16, color: GRAY, font: "Arial" }),
+      new TextRun({ children: [PageNumber.TOTAL_PAGES], size: 16, color: GRAY, font: "Arial" }),
+    ],
+    tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+    border: { top: { style: BorderStyle.SINGLE, size: 4, color: "D8D4CE", space: 4 } }
+  });
+
+  // ---- DOCUMENT CHILDREN ----
+  const children = [];
+
+  // Title
+  children.push(new Paragraph({
+    children: [new TextRun({ text: "SCOPE OF WORK AGREEMENT", size: 38, bold: true, color: DARK, font: "Arial" })],
+    spacing: { before: 480, after: 220 }
+  }));
+
+  // Meta info — clean 2-col summary table
+  const metaItems = [
+    ["Prepared For", d.clientName + (d.clientContact ? "  —  " + d.clientContact : "")],
+    ["Agreement Date", formatDate(d.agreementDate)],
+    ["Project", d.projectName],
+  ];
+  if (d.startDate) metaItems.push(["Start Date", formatDate(d.startDate)]);
+
+  const metaTableRows = metaItems.map(([label, value], idx) => {
+    const fill = idx % 2 === 0 ? "F8F8F6" : "FFFFFF";
+    return new TableRow({ children: [
+      new TableCell({
+        borders: noBorders,
+        width: { size: 2200, type: WidthType.DXA },
+        shading: { fill, type: ShadingType.CLEAR },
+        margins: { top: 80, bottom: 80, left: 120, right: 80 },
+        children: [new Paragraph({ children: [new TextRun({ text: label, size: 18, bold: true, font: "Arial", color: GRAY })] })]
+      }),
+      new TableCell({
+        borders: noBorders,
+        width: { size: 7160, type: WidthType.DXA },
+        shading: { fill, type: ShadingType.CLEAR },
+        margins: { top: 80, bottom: 80, left: 80, right: 120 },
+        children: [new Paragraph({ children: [new TextRun({ text: value, size: 20, font: "Arial", color: DARK })] })]
+      }),
+    ]});
+  });
+
+  children.push(new Table({
+    width: { size: CW, type: WidthType.DXA },
+    columnWidths: [2200, 7160],
+    rows: metaTableRows,
+  }));
+  children.push(new Paragraph({
+    spacing: { after: 0 },
+    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: ORANGE, space: 6 } }
+  }));
+  children.push(new Paragraph({ spacing: { after: 40 } }));
+
+  // ---- Section 1: Parties ----
+  children.push(new Paragraph({
+    children: [new TextRun({ text: "1.  PARTIES", size: 26, bold: true, color: DARK, font: "Arial" })],
+    spacing: { before: 280, after: 140 }
+  }));
+  children.push(new Paragraph({
+    children: [
+      new TextRun({ text: "This Scope of Work Agreement (\"Agreement\") is entered into as of ", size: 20, font: "Arial" }),
+      new TextRun({ text: formatDate(d.agreementDate), size: 20, bold: true, font: "Arial" }),
+      new TextRun({ text: " by and between ", size: 20, font: "Arial" }),
+      new TextRun({ text: d.providerName, size: 20, bold: true, font: "Arial" }),
+      new TextRun({ text: " (\"Provider\") and ", size: 20, font: "Arial" }),
+      new TextRun({ text: d.clientName, size: 20, bold: true, font: "Arial" }),
+      ...(d.clientAddress ? [new TextRun({ text: `, ${d.clientAddress}`, size: 20, font: "Arial" })] : []),
+      new TextRun({ text: " (\"Client\").", size: 20, font: "Arial" }),
+    ],
+    spacing: { after: 0, line: 320, lineRule: "auto" }
+  }));
+  children.push(new Paragraph({ spacing: { after: 0, line: 240 } }));
+  children.push(new Paragraph({ spacing: { after: 0, line: 240 } }));
+
+  // ---- Section 2: Scope ----
+  children.push(new Paragraph({
+    children: [new TextRun({ text: "2.  SCOPE OF SERVICES", size: 26, bold: true, color: DARK, font: "Arial" })],
+    spacing: { before: 120, after: 160 }
+  }));
+
+  // Services table — cols: name(2900), desc(4380), timing(900), price(1400) = 9580 ... recalc
+  // CW = 10080, use: name=3000, desc=4380, timing=900, price=1800 → 10080 ✓
+  const COL = [2760, 4000, 800, 1800];
+  const tableRows = [];
+
+  tableRows.push(new TableRow({
+    tableHeader: true,
+    children: [hCell("SERVICE", COL[0]), hCell("DELIVERABLES", COL[1]), hCell("TIMING", COL[2]), hCell("INVESTMENT", COL[3])]
+  }));
+
+  services.forEach((svc, i) => {
+    const fill = i % 2 === 0 ? "FFFFFF" : LGRAY;
+    const priceText = svc.clientPrice > 0 ? "$" + svc.clientPrice.toLocaleString() : "Custom";
+    const timingText = svc.isCustomDesign
+      ? `${svc.hours || 0} hrs @ $${svc.rate !== undefined ? svc.rate : 150}/hr`
+      : (svc.timing || "TBD");
+    tableRows.push(new TableRow({
+      children: [
+        dCell(svc.name, COL[0], fill, { bold: true }),
+        new TableCell({
+          borders: allBorders,
+          width: { size: COL[1], type: WidthType.DXA },
+          shading: { fill, type: ShadingType.CLEAR },
+          margins: { top: 110, bottom: 110, left: 130, right: 130 },
+          children: [new Paragraph({
+            spacing: { line: 300, lineRule: "auto" },
+            children: [new TextRun({ text: svc.desc, size: 18, font: "Arial", color: DARK })]
+          })]
+        }),
+        dCell(timingText, COL[2], fill, { color: GRAY }),
+        dCell(priceText, COL[3], fill, { bold: true, right: true })
+      ]
+    }));
+  });
+
+  // Total row
+  const total = services.reduce((s, r) => s + (r.clientPrice || 0), 0);
+  tableRows.push(new TableRow({
+    children: [
+      dCell("", COL[0], MGRAY),
+      dCell("", COL[1], MGRAY),
+      new TableCell({
+        borders: allBorders,
+        width: { size: COL[2], type: WidthType.DXA },
+        shading: { fill: ORANGE, type: ShadingType.CLEAR },
+        margins: { top: 110, bottom: 110, left: 130, right: 130 },
+        children: [new Paragraph({
+          alignment: AlignmentType.RIGHT,
+          children: [new TextRun({ text: "TOTAL INVESTMENT", size: 18, bold: true, font: "Arial", color: "FFFFFF" })]
+        })]
+      }),
+      new TableCell({
+        borders: allBorders,
+        width: { size: COL[3], type: WidthType.DXA },
+        shading: { fill: ORANGE, type: ShadingType.CLEAR },
+        margins: { top: 110, bottom: 110, left: 130, right: 130 },
+        children: [new Paragraph({
+          alignment: AlignmentType.RIGHT,
+          children: [new TextRun({ text: "$" + total.toLocaleString(), size: 22, bold: true, color: "FFFFFF", font: "Arial" })]
+        })]
+      })
+    ]
+  }));
+
+  children.push(new Table({
+    width: { size: CW, type: WidthType.DXA },
+    columnWidths: COL,
+    rows: tableRows
+  }));
+
+  // ---- Section 3: Investment & Payment (page 1) ----
+  children.push(new Paragraph({
+    children: [new TextRun({ text: "3.  INVESTMENT & PAYMENT", size: 26, bold: true, color: DARK, font: "Arial" })],
+    spacing: { before: 320, after: 180 }
+  }));
+
+  // Investment box
+  const invRows = [];
+  services.forEach(svc => {
+    if (!svc.clientPrice) return;
+    invRows.push(new TableRow({ children: [
+      new TableCell({ borders: noBorders, width: { size: 7000, type: WidthType.DXA }, margins: { top: 80, bottom: 80, left: 0, right: 0 },
+        children: [new Paragraph({ spacing: { line: 280 }, children: [new TextRun({ text: svc.name, size: 20, font: "Arial" })] })] }),
+      new TableCell({ borders: noBorders, width: { size: 2360, type: WidthType.DXA }, margins: { top: 80, bottom: 80, left: 0, right: 0 },
+        children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { line: 280 }, children: [new TextRun({ text: "$" + svc.clientPrice.toLocaleString(), size: 20, font: "Arial" })] })] })
+    ]}));
+  });
+  const orangeBorder = { style: BorderStyle.SINGLE, size: 6, color: ORANGE };
+  invRows.push(new TableRow({ children: [
+    new TableCell({ borders: { top: orangeBorder, bottom: noBorder, left: noBorder, right: noBorder }, width: { size: 7000, type: WidthType.DXA }, margins: { top: 100, bottom: 60, left: 0, right: 0 },
+      children: [new Paragraph({ children: [new TextRun({ text: "Total Investment", size: 22, bold: true, font: "Arial", color: ORANGE })] })] }),
+    new TableCell({ borders: { top: orangeBorder, bottom: noBorder, left: noBorder, right: noBorder }, width: { size: 2360, type: WidthType.DXA }, margins: { top: 100, bottom: 60, left: 0, right: 0 },
+      children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "$" + total.toLocaleString(), size: 24, bold: true, font: "Arial", color: ORANGE })] })] })
+  ]}));
+
+  children.push(new Table({ width: { size: CW, type: WidthType.DXA }, columnWidths: [7000, 2360], rows: invRows }));
+  children.push(new Paragraph({ spacing: { after: 200 } }));
+
+  // Payment schedule
+  if (d.paymentSchedule) {
+    children.push(new Paragraph({
+      children: [
+        new TextRun({ text: "Payment Schedule:  ", size: 20, bold: true, font: "Arial" }),
+        new TextRun({ text: d.paymentSchedule, size: 20, font: "Arial" })
+      ],
+      spacing: { after: 160, line: 300, lineRule: "auto" }
+    }));
+  }
+
+  // QB Link
+  if (d.qbLink) {
+    children.push(new Paragraph({
+      children: [
+        new TextRun({ text: "Pay Online:  ", size: 20, bold: true, font: "Arial" }),
+        new ExternalHyperlink({
+          children: [new TextRun({ text: "Click here to pay via QuickBooks Online", size: 20, style: "Hyperlink", font: "Arial" })],
+          link: d.qbLink
+        })
+      ],
+      spacing: { after: 160 }
+    }));
+  }
+
+  // Project notes
+  if (d.projectNotes) {
+    children.push(new Paragraph({
+      children: [
+        new TextRun({ text: "Notes:  ", size: 20, bold: true, font: "Arial" }),
+        new TextRun({ text: d.projectNotes, size: 20, font: "Arial" })
+      ],
+      spacing: { after: 160, line: 300, lineRule: "auto" }
+    }));
+  }
+
+  // ---- PAGE BREAK — terms + signatures start page 2 ----
+  children.push(new Paragraph({ children: [new PageBreak()] }));
+
+  // ---- Section 4: Terms ----
+  children.push(new Paragraph({
+    children: [new TextRun({ text: "4.  TERMS & CONDITIONS", size: 26, bold: true, color: DARK, font: "Arial" })],
+    spacing: { before: 120, after: 160 }
+  }));
+
+  const terms = [
+    { title: "Client Materials & Approvals.", body: ` Client agrees to provide all necessary materials, brand assets, feedback, and approvals in a timely manner. Delays on Client's end may affect project timelines without liability to Provider.` },
+    { title: "Revisions.", body: ` Each service includes the number of revision rounds specified above. Additional revisions beyond the included rounds will be billed at $150/hour.` },
+    { title: "Intellectual Property.", body: ` Upon receipt of final payment, Client receives full ownership of all final deliverables. Provider retains the right to display completed work in its portfolio and marketing materials unless Client requests otherwise in writing.` },
+    { title: "Confidentiality.", body: ` Both parties agree to keep each other's proprietary business information, pricing, and strategies confidential. Neither party will disclose such information to third parties without prior written consent.` },
+    { title: "Termination.", body: ` Either party may terminate this Agreement with 30 days written notice. All work completed and expenses incurred through the termination date will be invoiced and due upon termination.` },
+    { title: "Late Payments.", body: ` Invoices unpaid after 14 days of the due date are subject to a 1.5% monthly late fee. Provider reserves the right to pause or suspend work on accounts with overdue balances.` },
+    { title: "Governing Law.", body: ` This Agreement shall be governed by the laws of the State of ${d.governingState}. Any disputes shall first be addressed through good-faith negotiation between the parties.` },
+    { title: "Limits of Liability.", body: ` Client agrees to limit the liability of services performed by ${d.providerName} to be equal to the amount of the services paid by the Client, except for instances of gross negligence, fraud, willful injury to persons or property, or violations of law.` },
+  ];
+
+  terms.forEach((t, i) => {
+    children.push(new Paragraph({
+      numbering: { reference: "terms-list", level: 0 },
+      children: [
+        new TextRun({ text: t.title, size: 20, bold: true, font: "Arial" }),
+        new TextRun({ text: t.body, size: 20, font: "Arial" })
+      ],
+      spacing: { after: 160, line: 320, lineRule: "auto" }
+    }));
+  });
+
+  // ---- Section 5: Signatures ----
+  children.push(new Paragraph({
+    children: [new TextRun({ text: "5.  SIGNATURES", size: 26, bold: true, color: DARK, font: "Arial" })],
+    spacing: { before: 320, after: 160 }
+  }));
+  children.push(new Paragraph({
+    children: [new TextRun({ text: "By signing below, both parties agree to the terms of this Agreement.", size: 20, font: "Arial", color: GRAY })],
+    spacing: { after: 240 }
+  }));
+
+  // Signature table: two equal columns
+  const SIG_COL = [4320, 720, 4320]; // provider | spacer | client = 9360
+  const signatureTable = new Table({
+    width: { size: CW, type: WidthType.DXA },
+    columnWidths: SIG_COL,
+    rows: [
+      // Provider header | Client header
+      new TableRow({ children: [
+        new TableCell({ borders: noBorders, width: { size: SIG_COL[0], type: WidthType.DXA }, margins: { top: 0, bottom: 80, left: 0, right: 0 },
+          children: [new Paragraph({ children: [new TextRun({ text: "SERVICE PROVIDER", size: 20, bold: true, font: "Arial", color: ORANGE })] })] }),
+        new TableCell({ borders: noBorders, width: { size: SIG_COL[1], type: WidthType.DXA }, children: [new Paragraph({})] }),
+        new TableCell({ borders: noBorders, width: { size: SIG_COL[2], type: WidthType.DXA }, margins: { top: 0, bottom: 80, left: 0, right: 0 },
+          children: [new Paragraph({ children: [new TextRun({ text: "CLIENT", size: 20, bold: true, font: "Arial", color: ORANGE })] })] }),
+      ]}),
+      // Names
+      new TableRow({ children: [
+        new TableCell({ borders: noBorders, width: { size: SIG_COL[0], type: WidthType.DXA }, margins: { top: 0, bottom: 60, left: 0, right: 0 },
+          children: [new Paragraph({ children: [new TextRun({ text: d.providerName + (d.providerContact ? "  —  " + d.providerContact : ""), size: 22, bold: true, font: "Arial" })] })] }),
+        new TableCell({ borders: noBorders, width: { size: SIG_COL[1], type: WidthType.DXA }, children: [new Paragraph({})] }),
+        new TableCell({ borders: noBorders, width: { size: SIG_COL[2], type: WidthType.DXA }, margins: { top: 0, bottom: 60, left: 0, right: 0 },
+          children: [new Paragraph({ children: [new TextRun({ text: d.clientContact || d.clientName, size: 22, bold: true, font: "Arial" })] })] }),
+      ]}),
+      // Signature lines
+      new TableRow({ children: [
+        new TableCell({ borders: { top: noBorder, bottom: thinBorder, left: noBorder, right: noBorder }, width: { size: SIG_COL[0], type: WidthType.DXA }, margins: { top: 240, bottom: 80, left: 0, right: 0 },
+          children: [new Paragraph({ children: [new TextRun({ text: "Signature", size: 17, color: GRAY, font: "Arial" })] })] }),
+        new TableCell({ borders: noBorders, width: { size: SIG_COL[1], type: WidthType.DXA }, children: [new Paragraph({})] }),
+        new TableCell({ borders: { top: noBorder, bottom: thinBorder, left: noBorder, right: noBorder }, width: { size: SIG_COL[2], type: WidthType.DXA }, margins: { top: 240, bottom: 80, left: 0, right: 0 },
+          children: [new Paragraph({ children: [new TextRun({ text: "Signature", size: 17, color: GRAY, font: "Arial" })] })] }),
+      ]}),
+      // Date lines
+      new TableRow({ children: [
+        new TableCell({ borders: { top: noBorder, bottom: thinBorder, left: noBorder, right: noBorder }, width: { size: SIG_COL[0], type: WidthType.DXA }, margins: { top: 200, bottom: 80, left: 0, right: 0 },
+          children: [new Paragraph({ children: [new TextRun({ text: "Date", size: 17, color: GRAY, font: "Arial" })] })] }),
+        new TableCell({ borders: noBorders, width: { size: SIG_COL[1], type: WidthType.DXA }, children: [new Paragraph({})] }),
+        new TableCell({ borders: { top: noBorder, bottom: thinBorder, left: noBorder, right: noBorder }, width: { size: SIG_COL[2], type: WidthType.DXA }, margins: { top: 200, bottom: 80, left: 0, right: 0 },
+          children: [new Paragraph({ children: [new TextRun({ text: "Date", size: 17, color: GRAY, font: "Arial" })] })] }),
+      ]}),
+    ]
+  });
+
+  children.push(signatureTable);
+
+  // ---- BUILD DOCUMENT ----
+  const doc = new Document({
+    numbering: {
+      config: [{
+        reference: "terms-list",
+        levels: [{
+          level: 0, format: LevelFormat.DECIMAL, text: "%1.",
+          alignment: AlignmentType.LEFT,
+          style: { paragraph: { indent: { left: 480, hanging: 320 }, spacing: { after: 160 } } }
+        }]
+      }]
+    },
+    styles: {
+      default: { document: { run: { font: "Arial", size: 20, color: DARK } },
+                   paragraph: { spacing: { line: 300, lineRule: "auto", after: 120 } } }
+    },
+    sections: [{
+      properties: {
+        page: {
+          size: { width: 12240, height: 15840 },  // US Letter
+          margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }  // 1" all sides
+        }
+      },
+      headers: { default: new Header({ children: headerChildren }) },
+      footers: { default: new Footer({ children: [footerPara] }) },
+      children
+    }]
+  });
+
+  const blob = await Packer.toBlob(doc);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const safeName = d.clientName.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+  a.href = url;
+  a.download = `SOW_${safeName}_${d.agreementDate}.docx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
