@@ -303,12 +303,8 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 <script>
 (function() {
   const PW_KEY = 'lm_auth_v1';
-  const PW_HASH = '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'; // hello7hello
-
-  async function hashStr(str) {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-  }
+  const PW_B64 = 'aGVsbG83aGVsbG8=';
+  const PW_B64 = 'aGVsbG83aGVsbG8=';
 
   function showGate() {
     const gate = document.getElementById('pwGate');
@@ -319,11 +315,10 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
     setTimeout(() => document.getElementById('pwInput').focus(), 100);
   }
 
-  window.checkPW = async function() {
+  window.checkPW = function() {
     const val = document.getElementById('pwInput').value;
     const errEl = document.getElementById('pwError');
-    const h = await hashStr(val);
-    if (h === PW_HASH) {
+    if (btoa(val) === PW_B64) {
       localStorage.setItem(PW_KEY, '1');
       document.getElementById('pwGate').style.display = 'none';
       errEl.style.display = 'none';
